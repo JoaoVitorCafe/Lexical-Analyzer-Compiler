@@ -2,7 +2,7 @@
 #include <stdlib.h> 
 #include <ctype.h> 
 #include <string.h> 
-#include "Analex.h" 
+#include "AnalexCalcula.h" 
 #define TAM_LEXEMA 50 
 #define TAM_NUM 20 
 

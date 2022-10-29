@@ -2,7 +2,8 @@
 #include <stdlib.h> 
 #include <ctype.h> 
 #include <string.h> 
-#include "Analex.h" 
+#include "AnalexMinObjC.h"
+
 #define TAM_LEXEMA 50 
 #define TAM_NUM 20 
 
@@ -13,8 +14,7 @@ void error(char msg[]) {
 
 TOKEN AnaLex(FILE *fd) { 
 
-int estado; 
-
+int estado;
 char lexema[TAM_LEXEMA] = ""; 
 int tamL = 0; 
 char digitos[TAM_NUM] = ""; 
@@ -34,66 +34,184 @@ while (1) {
                 estado = 0; 
             }
 
-            else if (c >= 'a' && c <= 'z') { // inicio de identificador - inicializa lexema 
+            else if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) { // inicio de ID - inicializa lexema 
                 estado = 1; 
                 lexema[tamL] = c; 
                 lexema[++tamL] = '\0'; 
             }
 
-            else if (c >= '1' && c <= '9') { // inicio de constante inteira - inicializa digitos 
-              estado = 10; 
+            else if (c >= '0' && c <= '9') { // inicio de constante inteira - inicializa digitos 
+              estado = 3; 
               digitos[tamD] = c;  
               digitos[++tamD] = '\0';     
             } 
 
-            else if (c == '+') {  // sinal de adicao - monta e devolve token 
-              estado = 3; 
-              t.cat = SN; 
-              t.codigo = ADICAO; 
-              return t; 
-            } 
-
-            else if (c == '-') {  // sinal de subtracao - monta e devolve token 
-              estado = 4; 
-              t.cat = SN; 
-              t.codigo = SUBTRACAO; 
-              return t; 
-            } 
-
-            else if (c == '*') {  // sinal de multiplicacao - monta e devolve token 
+            else if (c == '"') {  // Início de uma string(literal)
               estado = 6; 
-              t.cat = SN; 
-              t.codigo = MULTIPLIC; 
-              return t; 
+              lexema[tamL] = c; 
+              lexema[++tamL] = '\0'; 
             } 
 
-            else if (c == '/') {  // sinal de divisao - monta e devolve token 
-              estado = 5; 
+            else if(c == '\''){ // aspas simples
+              estado = 11;
+              lexema[tamL] = c; 
+              lexema[++tamL] = '\0'; 
+            }
+
+            else if(c == '>'){ 
+                estado = 20;
+                lexema[tamL] = c; 
+                lexema[++tamL] = '\0';
+            }
+
+            else if(c == '<'){ 
+                estado = 23;
+                lexema[tamL] = c; 
+                lexema[++tamL] = '\0';
+            }
+
+            else if(c == '{'){ 
+                estado = 26;
+                t.cat = SN; 
+                t.codigo = FECHA_CHAVE; 
+            }
+
+             else if(c == '}'){ 
+              estado = 27;
               t.cat = SN; 
-              t.codigo = DIVISAO; 
-              return t; 
+              t.codigo = FECHA_CHAVE; 
+              return t;
+            }
+
+             else if(c == '{'){ 
+              estado = 26;
+              t.cat = SN; 
+              t.codigo = FECHA_CHAVE; 
+              return t;
+            }
+
+            else if (c == '&') {   
+              estado = 32; 
+              lexema[tamL] = c; 
+              lexema[++tamL] = '\0';
             } 
 
-            else if (c == '=') {  // sinal de atribuicao - monta e devolve token 
-              estado = 7; 
-              t.cat = SN; 
-              t.codigo = ATRIB; 
-              return t; 
+            else if (c == '|') {   
+              estado = 34; 
+              lexema[tamL] = c; 
+              lexema[++tamL] = '\0';
             } 
 
-            else if (c == '(') {  // sinal de abre parenteses - monta e devolve token 
-              estado = 8; 
+            else if (c == '(') { 
+              estado = 42; 
               t.cat = SN; 
               t.codigo = ABRE_PAR; 
               return t; 
             } 
 
-            else if (c == ')') {  // sinal de fecha parenteses - monta e devolve token 
-              estado = 9; 
+              else if (c == ')') {   
+              estado = 41; 
               t.cat = SN; 
               t.codigo = FECHA_PAR; 
               return t; 
             } 
+
+             else if (c == ':') {   
+              estado = 51; 
+              lexema[tamL] = c; 
+              lexema[++tamL] = '\0';
+            } 
+
+             else if (c == '.') {   
+              estado = 50; 
+              t.cat = SN; 
+              t.codigo = PONTO; 
+              return t;
+            } 
+
+            else if (c == ',') {   
+              estado = 48; 
+              t.cat = SN; 
+              t.codigo = PONTO; 
+              return t;
+            } 
+
+             else if (c == ';') {   
+              estado = 36; 
+              t.cat = SN; 
+              t.codigo = PONTO_VIRG; 
+              return t;
+            }
+
+            else if (c == '[') {   
+              estado = 46; 
+              t.cat = SN; 
+              t.codigo = ABRE_COL; 
+              return t; 
+            } 
+
+            else if (c == ']') {   
+              estado = 47; 
+              t.cat = SN; 
+              t.codigo = FECHA_COL; 
+              return t; 
+            } 
+
+            else if (c == '^') {   
+              estado = 5; 
+              t.cat = SN; 
+              t.codigo = CIRCUN; 
+              return t; 
+            } 
+
+            else if (c == '/') {  
+              estado = 30; 
+              lexema[tamL] = c; 
+              lexema[++tamL] = '\0';
+            } 
+
+            else if (c == '*') {  
+              estado = 31; 
+              t.cat = SN; 
+              t.codigo = MULTIPLIC; 
+              return t; 
+            } 
+
+            else if (c == '-') {   
+              estado = 29; 
+              t.cat = SN; 
+              t.codigo = SUBTRACAO; 
+              return t; 
+            } 
+
+            else if (c == '+') {   
+              estado = 29; 
+              t.cat = SN; 
+              t.codigo = SOMA; 
+              return t; 
+            } 
+
+             else if (c == '!') {   
+              estado = 14; 
+              t.cat = SN; 
+              t.codigo = NEGACAO; 
+              return t; 
+            } 
+
+             else if (c == '=') {   
+              estado = 18; 
+              t.cat = SN; 
+              t.codigo = COMPARA; 
+              return t; 
+            } 
+
+            else if (c == '=') {   
+              estado = 18; 
+              lexema[tamL] = c; 
+              lexema[++tamL] = '\0'; 
+              return t; 
+            } 
+
             else if (c == EOF) {  // fim da expressao encontrado 
                t.cat = FIM_ARQ; 
                return t; 
@@ -111,7 +229,7 @@ while (1) {
               estado = 1; 
               lexema[tamL] = c;   // acumula caracteres lidos em lexema 
               lexema[++tamL] = '\0'; 
-            } 
+          } 
 
           else {           // transicao OUTRO* do estado 1 do AFD 
               estado = 2;      // monta token identificador e retorna 
@@ -158,8 +276,8 @@ while (1) {
             break; 
         case SN: 
             switch (tk.codigo) { 
-                case ADICAO: 
-                    printf("<SN, ADICAO> "); 
+                case SOMA: 
+                    printf("<SN, SOMA> "); 
                     break; 
         
                 case SUBTRACAO: 

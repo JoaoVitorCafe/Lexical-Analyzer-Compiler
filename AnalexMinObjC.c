@@ -29,7 +29,6 @@ while (1) {
     char c = fgetc(fd); 
     switch (estado) { 
         case 0: 
-        
             if (c == ' ' || c == '\t'){
                 estado = 0; 
             }
@@ -46,7 +45,7 @@ while (1) {
               digitos[++tamD] = '\0';     
             } 
 
-            else if (c == '"') {  // Início de uma string(literal)
+            else if (c == '\"') {  // Início de uma string(literal)
               estado = 6; 
               lexema[tamL] = c; 
               lexema[++tamL] = '\0'; 
@@ -60,20 +59,17 @@ while (1) {
 
             else if(c == '>'){ 
                 estado = 20;
-                lexema[tamL] = c; 
-                lexema[++tamL] = '\0';
             }
 
             else if(c == '<'){ 
                 estado = 23;
-                lexema[tamL] = c; 
-                lexema[++tamL] = '\0';
             }
 
             else if(c == '{'){ 
-                estado = 26;
-                t.cat = SN; 
-                t.codigo = FECHA_CHAVE; 
+              estado = 26;
+              t.cat = SN; 
+              t.codigo = FECHA_CHAVE; 
+              return t;
             }
 
              else if(c == '}'){ 
@@ -92,14 +88,10 @@ while (1) {
 
             else if (c == '&') {   
               estado = 32; 
-              lexema[tamL] = c; 
-              lexema[++tamL] = '\0';
             } 
 
             else if (c == '|') {   
-              estado = 34; 
-              lexema[tamL] = c; 
-              lexema[++tamL] = '\0';
+              estado = 34; ;
             } 
 
             else if (c == '(') { 
@@ -118,8 +110,6 @@ while (1) {
 
              else if (c == ':') {   
               estado = 51; 
-              lexema[tamL] = c; 
-              lexema[++tamL] = '\0';
             } 
 
              else if (c == '.') {   
@@ -192,24 +182,11 @@ while (1) {
             } 
 
              else if (c == '!') {   
-              estado = 14; 
-              t.cat = SN; 
-              t.codigo = NEGACAO; 
-              return t; 
-            } 
-
-             else if (c == '=') {   
-              estado = 18; 
-              t.cat = SN; 
-              t.codigo = COMPARA; 
-              return t; 
+              estado = 14;
             } 
 
             else if (c == '=') {   
               estado = 18; 
-              lexema[tamL] = c; 
-              lexema[++tamL] = '\0'; 
-              return t; 
             } 
 
             else if (c == EOF) {  // fim da expressao encontrado 
@@ -225,11 +202,11 @@ while (1) {
 
         case 1: 
 
-          if ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || (c == '_')) {   
+          if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')  || (c >= '0' && c <= '9') || (c == '_')) {   
               estado = 1; 
               lexema[tamL] = c;   // acumula caracteres lidos em lexema 
               lexema[++tamL] = '\0'; 
-          } 
+          }
 
           else {           // transicao OUTRO* do estado 1 do AFD 
               estado = 2;      // monta token identificador e retorna 
@@ -237,25 +214,295 @@ while (1) {
               t.cat = ID; 
               strcpy(t.lexema, lexema); 
               return t; 
-            } 
+          } 
 
           break; 
 
-        case 10:
+        case 3:
 
           if (c >= '0' && c <= '9') { 
-              estado = 10; 
+              estado = 3; 
               digitos[tamD] = c;    // acumula digitos lidos na variaavel digitos 
               digitos[++tamD] = '\0'; 
-            } 
+            }
 
-            else {            // transicao OUTRO* do estado 10 do AFD 
-              estado = 11;       // monta token constante inteira e retorna 
+          else if (c == '.'){
+            estado = 4;
+            digitos[tamD] = c;    // acumula digitos lidos na variaavel digitos 
+            digitos[++tamD] = '\0';
+          } 
+
+          else {            // transicao OUTRO* do estado 10 do AFD 
+              estado = 7;       // monta token constante inteira e retorna 
               ungetc(c, fd); 
               t.cat = CT_I; 
               t.valInt = atoi(digitos); 
               return t; 
-            } 
+            }
+
+          break;
+
+        case 4:
+
+          if (c >= '0' && c <= '9') { 
+              estado = 8; 
+              digitos[tamD] = c;    // acumula digitos lidos na variaavel digitos 
+              digitos[++tamD] = '\0'; 
+          }
+
+          break;
+
+        case 8:
+          
+          if (c >= '0' && c <= '9') { 
+              estado = 8; 
+              digitos[tamD] = c;    // acumula digitos lidos na variaavel digitos 
+              digitos[++tamD] = '\0'; 
+            }
+
+          else {
+            estado = 9;       // monta token constante inteira e retorna 
+            ungetc(c, fd); 
+            t.cat = CT_F; 
+            t.valFloat = atof(digitos); 
+            return t; 
+          }
+
+          break;
+
+        case 6:
+          
+          if((isprint(c) != 0) && (c != '\"') && (c!= '\n')){
+            estado = 6;
+            lexema[tamD] = c;    
+            lexema[++tamD] = '\0'; 
+          }
+
+          if(c == '\"'){
+            estado = 10;
+            lexema[tamD] = c;    
+            lexema[++tamD] = '\0';
+            t.cat = LT; 
+            strcpy(t.lexema, lexema); 
+            return t; 
+          }
+          
+          break;
+
+        case 11:
+          if((isprint(c) != 0) && (c != '\\') && (c != '\'')){
+            estado = 12;
+            lexema[tamD] = c;    
+            lexema[++tamD] = '\0'; 
+          }
+
+          if(c == '\\'){
+            estado = 43;
+            lexema[tamD] = c;    
+            lexema[++tamD] = '\0';
+          }
+
+          if(c == '\''){
+            estado = 13;
+            lexema[tamD] = c;    
+            lexema[++tamD] = '\0';
+            t.cat = CT_C; 
+            strcpy(t.lexema, lexema);
+            return t; 
+          }
+
+          break;
+
+        case 12:
+
+          if(c == '\''){
+            estado = 13;
+            lexema[tamD] = c;     
+            lexema[++tamD] = '\0';
+            t.cat = CT_C; 
+            strcpy(t.lexema, lexema); 
+            return t; 
+          }
+
+          break;
+        
+        case 43:
+
+          if(c == 'n'){
+            estado = 44;
+            lexema[tamD] = c;    
+            lexema[++tamD] = '\0';
+          }
+
+          if(c == '0'){
+            estado = 45;
+            lexema[tamD] = c;    
+            lexema[++tamD] = '\0';
+          }
+
+          break;
+        
+        case 44:
+          
+          if(c == '\''){
+            estado = 13;
+            lexema[tamD] = c;     
+            lexema[++tamD] = '\0';
+            t.cat = CT_C; 
+            strcpy(t.lexema, lexema); 
+            return t; 
+          }
+
+          break;
+
+        case 45:
+          
+          if(c == '\''){
+            estado = 13;
+            lexema[tamD] = c;   
+            lexema[++tamD] = '\0';
+            t.cat = CT_C; 
+            strcpy(t.lexema, lexema); 
+            return t; 
+          }
+
+          break;
+
+        case 20:
+          
+          if(c == '='){
+            estado = 21;
+            t.cat = SN; 
+            t.codigo = MAIORIGUAL;
+            
+            return t; 
+          }
+
+          else {
+            estado = 22;
+            ungetc(c, fd); 
+            t.cat = SN; 
+            t.codigo = MAIOR ;
+            return t; 
+          }
+
+          break;
+
+        case 23:
+          
+          if(c == '='){
+            estado = 24;
+            t.cat = SN; 
+            t.codigo = MENORIGUAL;
+            return t; 
+          }
+
+          else {
+            estado = 25;
+            ungetc(c, fd); 
+            t.cat = SN; 
+            t.codigo = MENOR ;
+            return t; 
+          }
+
+          break;
+
+        case 32:
+
+          if(c == '&'){
+            estado == 33;
+            t.cat = SN;
+            t.codigo = AND;
+            return t; 
+          }
+
+          else {
+            estado = 49;
+            ungetc(c, fd); 
+            t.cat = SN; 
+            t.codigo = ENDERECO;
+            return t; 
+          }
+
+          break;
+
+        case 34:
+
+          if(c == '|'){
+            estado = 35;
+            t.cat = SN; 
+            t.codigo = OR;
+            return t; 
+          }
+
+          /*
+          else {
+            ungetc(c , fd) 
+            estado = 0;
+          }
+          */
+
+          break; 
+
+        case 51:
+          
+          if(c == ':'){
+            estado = 52;
+            t.cat = SN; 
+            t.codigo = ESCOPO;
+            return t; 
+          }
+
+          else {
+            estado = 53;
+            ungetc(c, fd); 
+            t.cat = SN; 
+            t.codigo = DOISPONTOS;
+            return t;
+          }
+
+          break;
+
+        case 14 :
+
+          if(c == '='){
+            estado = 16;
+            t.cat = SN; 
+            t.codigo = DIFERENTE;
+            return t; 
+          }
+
+          else {
+            estado = 15;
+            ungetc(c, fd); 
+            t.cat = SN; 
+            t.codigo = NEGACAO;
+            return t;
+          }
+
+          break;
+
+        case 17:
+
+          if(c == '='){
+            estado = 18;
+            t.cat = SN; 
+            t.codigo = COMPARA;
+            return t; 
+          }
+
+          else {
+            estado = 19;
+            ungetc(c, fd); 
+            t.cat = SN; 
+            t.codigo = ATRIB;
+            return t;
+          }
+
+          break;
+          
+          // fazer comentários aqui
+           
         }           
     } 
 } 

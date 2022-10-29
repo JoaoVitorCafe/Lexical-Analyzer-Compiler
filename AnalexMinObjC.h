@@ -48,7 +48,7 @@ enum SINAIS
     MENORIGUAL,
     AND,
     OR,
-    ENDEREÇO
+    ENDERECO
 }; // Sinais válidos da linguagem
 
 typedef struct

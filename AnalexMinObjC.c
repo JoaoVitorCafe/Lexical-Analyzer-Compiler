@@ -68,7 +68,7 @@ while (1) {
             else if(c == '{'){ 
               estado = 26;
               t.cat = SN; 
-              t.codigo = FECHA_CHAVE; 
+              t.codigo = ABRE_CHAVE; 
               return t;
             }
 
@@ -82,7 +82,7 @@ while (1) {
              else if(c == '{'){ 
               estado = 26;
               t.cat = SN; 
-              t.codigo = FECHA_CHAVE; 
+              t.codigo = ABRE_CHAVE; 
               return t;
             }
 
@@ -122,7 +122,7 @@ while (1) {
             else if (c == ',') {   
               estado = 48; 
               t.cat = SN; 
-              t.codigo = PONTO; 
+              t.codigo = VIRGULA; 
               return t;
             } 
 
@@ -155,6 +155,7 @@ while (1) {
             } 
 
             else if (c == '/') {  
+              // FIX THIS AFTER MAKE THE COMMENTS PART
               estado = 30; 
               lexema[tamL] = c; 
               lexema[++tamL] = '\0';
@@ -186,7 +187,7 @@ while (1) {
             } 
 
             else if (c == '=') {   
-              estado = 18; 
+              estado = 17; 
             } 
 
             else if (c == EOF) {  // fim da expressao encontrado 
@@ -248,6 +249,14 @@ while (1) {
               estado = 8; 
               digitos[tamD] = c;    // acumula digitos lidos na variaavel digitos 
               digitos[++tamD] = '\0'; 
+          } 
+
+          else {
+            estado = 0;
+            tamD = 0;
+            digitos[tamD] = '\0'; // limpa os digitos           
+            error("Caracter invalido na expressao!");
+            ungetc(c, fd);
           }
 
           break;
@@ -261,10 +270,10 @@ while (1) {
             }
 
           else {
-            estado = 9;       // monta token constante inteira e retorna 
-            ungetc(c, fd); 
+            estado = 9;       // monta token constante inteira e retorna  
             t.cat = CT_F; 
             t.valFloat = atof(digitos); 
+            ungetc(c, fd);
             return t; 
           }
 
@@ -274,17 +283,25 @@ while (1) {
           
           if((isprint(c) != 0) && (c != '\"') && (c!= '\n')){
             estado = 6;
-            lexema[tamD] = c;    
-            lexema[++tamD] = '\0'; 
+            lexema[tamL] = c;    
+            lexema[++tamL] = '\0'; 
           }
 
-          if(c == '\"'){
+          else if(c == '\"'){
             estado = 10;
-            lexema[tamD] = c;    
-            lexema[++tamD] = '\0';
+            lexema[tamL] = c;    
+            lexema[++tamL] = '\0';
             t.cat = LT; 
             strcpy(t.lexema, lexema); 
             return t; 
+          } 
+
+          else {
+            estado = 0;
+            tamL = 0;
+            lexema[tamL] = '\0'; // limpa o lexema
+            error("Caracter invalido na expressao!");
+            ungetc(c, fd);
           }
           
           break;
@@ -292,23 +309,31 @@ while (1) {
         case 11:
           if((isprint(c) != 0) && (c != '\\') && (c != '\'')){
             estado = 12;
-            lexema[tamD] = c;    
-            lexema[++tamD] = '\0'; 
+            lexema[tamL] = c;    
+            lexema[++tamL] = '\0'; 
           }
 
-          if(c == '\\'){
+          else if(c == '\\'){
             estado = 43;
-            lexema[tamD] = c;    
-            lexema[++tamD] = '\0';
+            lexema[tamL] = c;    
+            lexema[++tamL] = '\0';
           }
 
-          if(c == '\''){
+          else if(c == '\''){
             estado = 13;
-            lexema[tamD] = c;    
-            lexema[++tamD] = '\0';
+            lexema[tamL] = c;    
+            lexema[++tamL] = '\0';
             t.cat = CT_C; 
             strcpy(t.lexema, lexema);
             return t; 
+          }
+
+          else {
+            estado = 0;
+            tamL = 0;
+            lexema[tamL] = '\0'; // limpa o lexema
+            error("Caracter invalido na expressao!");
+            ungetc(c, fd);
           }
 
           break;
@@ -317,11 +342,19 @@ while (1) {
 
           if(c == '\''){
             estado = 13;
-            lexema[tamD] = c;     
-            lexema[++tamD] = '\0';
+            lexema[tamL] = c;     
+            lexema[++tamL] = '\0';
             t.cat = CT_C; 
             strcpy(t.lexema, lexema); 
             return t; 
+          }
+
+          else {
+            estado = 0;
+            tamL = 0;
+            lexema[tamL] = '\0'; // limpa o lexema
+            error("Caracter invalido na expressao!");
+            ungetc(c, fd);
           }
 
           break;
@@ -330,14 +363,22 @@ while (1) {
 
           if(c == 'n'){
             estado = 44;
-            lexema[tamD] = c;    
-            lexema[++tamD] = '\0';
+            lexema[tamL] = c;    
+            lexema[++tamL] = '\0';
           }
 
-          if(c == '0'){
+          else if(c == '0'){
             estado = 45;
-            lexema[tamD] = c;    
-            lexema[++tamD] = '\0';
+            lexema[tamL] = c;    
+            lexema[++tamL] = '\0';
+          }
+
+          else {
+            estado = 0;
+            tamL = 0;
+            lexema[tamL] = '\0'; // limpa o lexema
+            error("Caracter invalido na expressao!");
+            ungetc(c, fd);
           }
 
           break;
@@ -346,11 +387,19 @@ while (1) {
           
           if(c == '\''){
             estado = 13;
-            lexema[tamD] = c;     
-            lexema[++tamD] = '\0';
+            lexema[tamL] = c;     
+            lexema[++tamL] = '\0';
             t.cat = CT_C; 
             strcpy(t.lexema, lexema); 
             return t; 
+          }
+
+          else {
+            estado = 0;
+            tamL = 0;
+            lexema[tamL] = '\0'; // limpa o lexema
+            error("Caracter invalido na expressao!");
+            ungetc(c, fd);
           }
 
           break;
@@ -359,11 +408,19 @@ while (1) {
           
           if(c == '\''){
             estado = 13;
-            lexema[tamD] = c;   
-            lexema[++tamD] = '\0';
+            lexema[tamL] = c;   
+            lexema[++tamL] = '\0';
             t.cat = CT_C; 
             strcpy(t.lexema, lexema); 
             return t; 
+          }
+
+          else {
+            estado = 0;
+            tamL = 0;
+            lexema[tamL] = '\0'; // limpa o lexema
+            error("Caracter invalido na expressao!");
+            ungetc(c, fd);
           }
 
           break;
@@ -435,12 +492,13 @@ while (1) {
             return t; 
           }
 
-          /*
+          
           else {
-            ungetc(c , fd) 
+            error("Caracter invalido na expressao!");
             estado = 0;
+            ungetc(c , fd); 
           }
-          */
+          
 
           break; 
 
@@ -487,7 +545,7 @@ while (1) {
           if(c == '='){
             estado = 18;
             t.cat = SN; 
-            t.codigo = COMPARA;
+            t.codigo = COMPARACAO;
             return t; 
           }
 
@@ -520,43 +578,134 @@ while (1) {
     switch (tk.cat) { 
         case ID: 
             printf("<ID, %s> ", tk.lexema); 
-            break; 
+            break;
+
+        case LT:
+            printf("<LT, %s> ", tk.lexema); 
+            break;
+
         case SN: 
             switch (tk.codigo) { 
                 case SOMA: 
-                    printf("<SN, SOMA> "); 
-                    break; 
+                  printf("<SN, SOMA> "); 
+                  break; 
         
                 case SUBTRACAO: 
-                    printf("<SN, SUBTRACAO> "); 
-                    break;
+                  printf("<SN, SUBTRACAO> "); 
+                  break;
 
                 case MULTIPLIC: 
-                    printf("<SN, MULTIPLICACAO> "); 
-                    break;
+                  printf("<SN, MULTIPLICACAO> "); 
+                  break;
 
                 case DIVISAO: 
-                    printf("<SN, DIVISAO> "); 
-                    break; 
+                  printf("<SN, DIVISAO> "); 
+                  break; 
 
                 case ATRIB: 
-                    printf("<SN, ATRIBUICAO> "); 
-                    break; 
+                  printf("<SN, ATRIBUICAO> "); 
+                  break; 
 
                 case ABRE_PAR: 
-                    printf("<SN, ABRE_PARENTESES> "); 
-                    break; 
+                  printf("<SN, ABRE_PARENTESES> "); 
+                  break; 
 
                 case FECHA_PAR: 
-                    printf("<SN, FECHA_PARENTESES> "); 
-                    break; 
+                  printf("<SN, FECHA_PARENTESES> "); 
+                  break; 
+
+                case COMPARACAO: 
+                  printf("<SN, COMPARACAO> "); 
+                  break; 
+
+                case ABRE_CHAVE: 
+                  printf("<SN, ABRE_CHAVE> "); 
+                  break; 
+
+                case FECHA_CHAVE: 
+                  printf("<SN, FECHA_CHAVE> "); 
+                  break; 
+
+                case ABRE_COL: 
+                  printf("<SN, ABRE_COL> "); 
+                  break; 
+
+                case FECHA_COL: 
+                  printf("<SN, FECHA_COL> "); 
+                  break;
+
+                case NEGACAO: 
+                  printf("<SN, NEGACAO> "); 
+                  break;
+
+                case DIFERENTE:
+                  printf("<SN, DIFERENTE> "); 
+                  break;
+
+                case CIRCUN:
+                  printf("<SN, CIRCUN> "); 
+                  break;
+
+                case PONTO_VIRG:
+                  printf("<SN, PONTO_VIG> "); 
+                  break;
+
+                case VIRGULA:
+                  printf("<SN, VIRGULA> "); 
+                  break;
+                
+                case PONTO:
+                  printf("<SN, PONTO> "); 
+                  break;
+
+                case ESCOPO:
+                  printf("<SN, ESCOPO> "); 
+                  break;
+
+                case DOISPONTOS:
+                  printf("<SN, DOISPONTOS> "); 
+                  break;
+
+                case MAIOR:
+                  printf("<SN, MAIOR> "); 
+                  break;
+                
+                case MENOR:
+                  printf("<SN, MENOR> "); 
+                  break;
+                
+                case MAIORIGUAL:
+                  printf("<SN, MAIORIGUAL> "); 
+                  break;
+                
+                case MENORIGUAL:
+                  printf("<SN, MENORIGUAL> "); 
+                  break;
+                
+                case AND:
+                  printf("<SN, AND> "); 
+                  break;
+
+                case OR:
+                  printf("<SN, OR> "); 
+                  break;
+
+                case ENDERECO:
+                  printf("<SN, ENDERECO> "); 
+                  break;
             } 
 
             break; 
 
         case CT_I: 
             printf("<CT_I, %d> ", tk.valInt); 
-            break; 
+            break;
+
+        case CT_F:
+            printf("<CT_F, %f> ", tk.valFloat);
+
+        case CT_C:
+            printf("<CT_C, %s> ", tk.lexema);
 
         case FIM_ARQ: 
             printf("\nFim da expressao encontrado.\n"); 

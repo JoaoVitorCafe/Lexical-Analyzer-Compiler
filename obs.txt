@@ -1,14 +1,7 @@
-# To do
-
-Caracteres estranhos após numeros float
-TRATAR CARACTERES COMO STRINGS OU CARACTERES(tk.caracter)
-Verificar palavras reservadas
-Comentários e sinal de divisão
-
-
- # Problemas sem solução
+# Problemas
 
 caractere newline('\n') em strings
-aparecimentos de msg de erro(Fim da expressão encontrado) quando usamos charcon(caracteres)
-
+Utilização do campo do tipo char (tk.caracter) parece inviável
+QUalquer caractere dentro dos comentários
+Tabela pra guardar os literais????
 

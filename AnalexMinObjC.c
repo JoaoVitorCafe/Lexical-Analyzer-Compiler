@@ -10,10 +10,22 @@
 void error(char msg[]) { 
     printf("%s\n", msg); 
     exit(1); 
-} 
+}
+
+int findReservadas(char reservadas[][20] , char string[]){
+    for(int i = 0 ; i < 20 ; i++){
+        if(strcmp(reservadas[i] , string) == 0){
+          return i;
+        }
+    }
+
+    return -1;
+}
+
 
 TOKEN AnaLex(FILE *fd) { 
 
+char reservadas[20][20] = {"class" , "data" , "code" , "intern" , "void" , "char", "int", "float" , "bool" , "if" , "else" , "while" , "for" , "return" , "delete" , "main" , "new"};
 int estado;
 char lexema[TAM_LEXEMA] = ""; 
 int tamL = 0; 
@@ -155,7 +167,6 @@ while (1) {
             } 
 
             else if (c == '/') {  
-              // FIX THIS AFTER MAKE THE COMMENTS PART
               estado = 30; 
               lexema[tamL] = c; 
               lexema[++tamL] = '\0';
@@ -212,7 +223,13 @@ while (1) {
           else {           // transicao OUTRO* do estado 1 do AFD 
               estado = 2;      // monta token identificador e retorna 
               ungetc(c, fd); 
-              t.cat = ID; 
+              
+              if((findReservadas(reservadas , lexema) != -1)){
+                t.cat = PR;
+              }  else {
+                t.cat = ID;
+              }
+               
               strcpy(t.lexema, lexema); 
               return t; 
           } 
@@ -559,8 +576,72 @@ while (1) {
 
           break;
           
-          // fazer comentários aqui
-           
+        case 30:
+          
+          if(c == '*'){
+            estado = 38;
+            lexema[tamL] = c; 
+            lexema[++tamL] = '\0';
+          }
+
+          else {
+            estado = 37;
+            ungetc(c, fd); 
+            t.cat = SN;
+            t.codigo = DIVISAO;
+            return t;
+          }
+
+          break;
+
+        case 38:
+          if((isprint(c) != 0) && c != '*'){
+            estado =  38;
+            lexema[tamL] = c;    
+            lexema[++tamL] = '\0'; 
+          }
+
+          else if(c == '*'){
+            estado = 39;
+            lexema[tamL] = c;    
+            lexema[++tamL] = '\0';
+          }
+
+          else {
+            estado = 0;
+            tamL = 0;
+            lexema[tamL] = '\0'; // limpa o lexema
+            error("Caracter invalido na expressao!");
+            ungetc(c, fd); 
+          }
+
+          break;
+
+        case 39:
+          if(c == '/'){
+            estado = 40;
+            lexema[tamL] = c;    
+            lexema[++tamL] = '\0';
+            strcpy(t.lexema, lexema);
+            t.cat = COMMENT;
+            return t;
+          }
+
+          else if(c == '*'){
+            estado = 39;
+            lexema[tamL] = c;    
+            lexema[++tamL] = '\0';
+          }
+
+          else {
+            estado = 0;
+            tamL = 0;
+            lexema[tamL] = '\0'; // limpa o lexema
+            error("Caracter invalido na expressao!");
+            ungetc(c, fd); 
+          }
+          
+          break;
         }           
     } 
 } 
@@ -703,12 +784,23 @@ while (1) {
 
         case CT_F:
             printf("<CT_F, %f> ", tk.valFloat);
+            break;
 
         case CT_C:
             printf("<CT_C, %s> ", tk.lexema);
+            break;
+
+        case COMMENT:
+            printf("<COMMENT, %s> ", tk.lexema);
+            break;
+        
+        case PR:
+            printf("<PALAVRA RESERVADA, %s> ", tk.lexema);
+            break;
 
         case FIM_ARQ: 
             printf("\nFim da expressao encontrado.\n"); 
+            break;
     } 
     
     if (tk.cat == FIM_ARQ) 
@@ -718,4 +810,4 @@ while (1) {
   fclose(fd); 
   return 0; 
 
-} 
+}

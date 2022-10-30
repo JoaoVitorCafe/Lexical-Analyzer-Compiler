@@ -336,7 +336,7 @@ while (1) {
             lexema[++tamL] = '\0';
           }
 
-          else if(c == '\''){
+          /*else if(c == '\''){
             estado = 13;
             lexema[tamL] = c;    
             lexema[++tamL] = '\0';
@@ -344,6 +344,8 @@ while (1) {
             strcpy(t.lexema, lexema);
             return t; 
           }
+          Deve-se permitir constantes caracteres totalmente vazios? O próprio C não permite
+          */
 
           else {
             estado = 0;
@@ -361,7 +363,8 @@ while (1) {
             estado = 13;
             lexema[tamL] = c;     
             lexema[++tamL] = '\0';
-            t.cat = CT_C; 
+            t.cat = CT_C;
+            t.caracter = lexema[1];
             strcpy(t.lexema, lexema); 
             return t; 
           }
@@ -407,6 +410,7 @@ while (1) {
             lexema[tamL] = c;     
             lexema[++tamL] = '\0';
             t.cat = CT_C; 
+            t.caracter = '\n';
             strcpy(t.lexema, lexema); 
             return t; 
           }
@@ -427,7 +431,8 @@ while (1) {
             estado = 13;
             lexema[tamL] = c;   
             lexema[++tamL] = '\0';
-            t.cat = CT_C; 
+            t.cat = CT_C;
+            t.caracter = '\0'; 
             strcpy(t.lexema, lexema); 
             return t; 
           }
@@ -595,7 +600,7 @@ while (1) {
           break;
 
         case 38:
-          if((isprint(c) != 0) && c != '*'){
+          if((c >= 0 && c <= 255) && (c != '*')){
             estado =  38;
             lexema[tamL] = c;    
             lexema[++tamL] = '\0'; 
@@ -788,6 +793,7 @@ while (1) {
 
         case CT_C:
             printf("<CT_C, %s> ", tk.lexema);
+            // printf("<CT_C, %c>", tk.caracter);
             break;
 
         case COMMENT:

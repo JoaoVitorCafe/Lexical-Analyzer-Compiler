@@ -1,7 +1,9 @@
 # Problemas
 
+ - Tratar o newline(não reconhece)
+
 caractere newline('\n') em strings
 Utilização do campo do tipo char (tk.caracter) parece inviável
-QUalquer caractere dentro dos comentários
+QUalquer caractere dentro dos comentários*
 Tabela pra guardar os literais????
 

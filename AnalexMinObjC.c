@@ -26,10 +26,14 @@ int findReservadas(char reservadas[][20] , char string[]){
 TOKEN AnaLex(FILE *fd) { 
 
 char reservadas[20][20] = {"class" , "data" , "code" , "intern" , "void" , "char", "int", "float" , "bool" , "if" , "else" , "while" , "for" , "return" , "delete" , "main" , "new"};
+
 int estado;
+
 char lexema[TAM_LEXEMA] = ""; 
+char digitos[TAM_NUM] = "";
+char caractere; 
+
 int tamL = 0; 
-char digitos[TAM_NUM] = ""; 
 int tamD = 0; 
  
 TOKEN t; 
@@ -65,8 +69,8 @@ while (1) {
 
             else if(c == '\''){ // aspas simples
               estado = 11;
-              lexema[tamL] = c; 
-              lexema[++tamL] = '\0'; 
+              //lexema[tamL] = c; 
+              //lexema[++tamL] = '\0'; 
             }
 
             else if(c == '>'){ 
@@ -308,6 +312,7 @@ while (1) {
             estado = 10;
             lexema[tamL] = c;    
             lexema[++tamL] = '\0';
+            // Passar o lexema para a tabela de literais e indicar o índice no token
             t.cat = LT; 
             strcpy(t.lexema, lexema); 
             return t; 
@@ -326,14 +331,15 @@ while (1) {
         case 11:
           if((isprint(c) != 0) && (c != '\\') && (c != '\'')){
             estado = 12;
-            lexema[tamL] = c;    
-            lexema[++tamL] = '\0'; 
+            caractere = c;
+            //lexema[tamL] = c;    
+            //lexema[++tamL] = '\0'; 
           }
 
           else if(c == '\\'){
             estado = 43;
-            lexema[tamL] = c;    
-            lexema[++tamL] = '\0';
+            //lexema[tamL] = c;    
+            //lexema[++tamL] = '\0';
           }
 
           /*else if(c == '\''){
@@ -361,11 +367,15 @@ while (1) {
 
           if(c == '\''){
             estado = 13;
-            lexema[tamL] = c;     
-            lexema[++tamL] = '\0';
+            //lexema[tamL] = c;     
+            //lexema[++tamL] = '\0';
+            
             t.cat = CT_C;
-            t.caracter = lexema[1];
-            strcpy(t.lexema, lexema); 
+            t.caracter = caractere;
+            
+            //t.caracter = lexema[1];
+            
+            //strcpy(t.lexema, lexema); 
             return t; 
           }
 
@@ -383,20 +393,20 @@ while (1) {
 
           if(c == 'n'){
             estado = 44;
-            lexema[tamL] = c;    
-            lexema[++tamL] = '\0';
+            //lexema[tamL] = c;    
+            //lexema[++tamL] = '\0';
           }
 
           else if(c == '0'){
             estado = 45;
-            lexema[tamL] = c;    
-            lexema[++tamL] = '\0';
+            //lexema[tamL] = c;    
+            //lexema[++tamL] = '\0';
           }
 
           else {
-            estado = 0;
-            tamL = 0;
-            lexema[tamL] = '\0'; // limpa o lexema
+            //estado = 0;
+            //tamL = 0;
+            // lexema[tamL] = '\0'; // limpa o lexema
             error("Caracter invalido na expressao!");
             ungetc(c, fd);
           }
@@ -407,18 +417,20 @@ while (1) {
           
           if(c == '\''){
             estado = 13;
-            lexema[tamL] = c;     
-            lexema[++tamL] = '\0';
+            //lexema[tamL] = c;     
+            //lexema[++tamL] = '\0';
+            caractere = '\n';
             t.cat = CT_C; 
-            t.caracter = '\n';
-            strcpy(t.lexema, lexema); 
+            t.caracter = caractere;
+            
+            //strcpy(t.lexema, lexema); 
             return t; 
           }
 
           else {
             estado = 0;
             tamL = 0;
-            lexema[tamL] = '\0'; // limpa o lexema
+            //lexema[tamL] = '\0'; // limpa o lexema
             error("Caracter invalido na expressao!");
             ungetc(c, fd);
           }
@@ -429,18 +441,19 @@ while (1) {
           
           if(c == '\''){
             estado = 13;
-            lexema[tamL] = c;   
-            lexema[++tamL] = '\0';
+            //lexema[tamL] = c;   
+            //lexema[++tamL] = '\0';
             t.cat = CT_C;
-            t.caracter = '\0'; 
-            strcpy(t.lexema, lexema); 
+            caractere = '\0';
+            t.caracter = caractere; 
+            //strcpy(t.lexema, lexema); 
             return t; 
           }
 
           else {
             estado = 0;
             tamL = 0;
-            lexema[tamL] = '\0'; // limpa o lexema
+            //lexema[tamL] = '\0'; // limpa o lexema
             error("Caracter invalido na expressao!");
             ungetc(c, fd);
           }
@@ -453,7 +466,6 @@ while (1) {
             estado = 21;
             t.cat = SN; 
             t.codigo = MAIORIGUAL;
-            
             return t; 
           }
 
@@ -792,8 +804,8 @@ while (1) {
             break;
 
         case CT_C:
-            printf("<CT_C, %s> ", tk.lexema);
-            // printf("<CT_C, %c>", tk.caracter);
+            //printf("<CT_C, %s> ", tk.lexema);
+            printf("<CT_C, %c>", tk.caracter);
             break;
 
         case COMMENT:

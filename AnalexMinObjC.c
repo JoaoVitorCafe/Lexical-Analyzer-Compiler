@@ -36,7 +36,7 @@ int armazenarLiteral(char literal[]) {
 
 TOKEN AnaLex(FILE *fd) { 
 
-char reservadas[20][20] = {"class" , "data" , "code" , "intern" , "void" , "char", "int", "float" , "bool" , "if" , "else" , "while" , "for" , "return" , "delete" , "main" , "new"};
+char reservadas[20][20] = {"class" , "data" , "code" , "intern" , "void" , "char", "int", "float" , "bool" , "if" , "else" , "while" , "for" , "return" , "delete" , "new"};
 
 int estado;
 
@@ -257,12 +257,8 @@ while (1) {
               digitos[++tamD] = '\0'; 
           } 
 
-          else {
-            estado = 0;
-            tamD = 0;
-            digitos[tamD] = '\0'; // limpa os digitos           
+          else {        
             error("Caracter invalido na expressao!");
-            ungetc(c, fd);
           }
 
           break;

@@ -4,8 +4,11 @@
 #include <string.h> 
 #include "AnalexMinObjC.h"
 
-#define TAM_LEXEMA 50 
+#define TAM_LEXEMA 50
+#define TAM_LITERAL 50  
 #define TAM_NUM 20 
+
+int indiceLiteral = 0;
 
 void error(char msg[]) { 
     printf("%s\n", msg); 
@@ -22,6 +25,14 @@ int findReservadas(char reservadas[][20] , char string[]){
     return -1;
 }
 
+int armazenarLiteral(char literal[]) {
+  int indice = indiceLiteral++;
+  
+  tabelaLiterais[indice] = literal;
+  
+  return indice;
+}
+
 
 TOKEN AnaLex(FILE *fd) { 
 
@@ -31,10 +42,12 @@ int estado;
 
 char lexema[TAM_LEXEMA] = ""; 
 char digitos[TAM_NUM] = "";
+char literal[TAM_LITERAL] = "";
 char caractere; 
 
 int tamL = 0; 
-int tamD = 0; 
+int tamD = 0;
+int tamLT = 0; 
  
 TOKEN t; 
 
@@ -49,6 +62,17 @@ while (1) {
                 estado = 0; 
             }
 
+            else if(c == '\'') estado = 11; // Início de um char
+            else if (c == '\"') estado = 6; // Início de uma string(literal)  
+            else if(c == '>') estado = 20; 
+            else if(c == '<') estado = 23; 
+            else if (c == '&') estado = 32; 
+            else if (c == '|') estado = 34;
+            else if (c == ':') estado = 51;
+            else if (c == '=') estado = 17;
+            else if (c == '!')estado = 14;
+            else if (c == '/') estado = 30;  
+
             else if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) { // inicio de ID - inicializa lexema 
                 estado = 1; 
                 lexema[tamL] = c; 
@@ -60,26 +84,6 @@ while (1) {
               digitos[tamD] = c;  
               digitos[++tamD] = '\0';     
             } 
-
-            else if (c == '\"') {  // Início de uma string(literal)
-              estado = 6; 
-              lexema[tamL] = c; 
-              lexema[++tamL] = '\0'; 
-            } 
-
-            else if(c == '\''){ // aspas simples
-              estado = 11;
-              //lexema[tamL] = c; 
-              //lexema[++tamL] = '\0'; 
-            }
-
-            else if(c == '>'){ 
-                estado = 20;
-            }
-
-            else if(c == '<'){ 
-                estado = 23;
-            }
 
             else if(c == '{'){ 
               estado = 26;
@@ -102,14 +106,6 @@ while (1) {
               return t;
             }
 
-            else if (c == '&') {   
-              estado = 32; 
-            } 
-
-            else if (c == '|') {   
-              estado = 34; ;
-            } 
-
             else if (c == '(') { 
               estado = 42; 
               t.cat = SN; 
@@ -122,10 +118,6 @@ while (1) {
               t.cat = SN; 
               t.codigo = FECHA_PAR; 
               return t; 
-            } 
-
-             else if (c == ':') {   
-              estado = 51; 
             } 
 
              else if (c == '.') {   
@@ -166,14 +158,15 @@ while (1) {
             else if (c == '^') {   
               estado = 5; 
               t.cat = SN; 
-              t.codigo = CIRCUN; 
+              t.codigo = PONTEIRO; 
               return t; 
-            } 
+            }
 
-            else if (c == '/') {  
-              estado = 30; 
-              lexema[tamL] = c; 
-              lexema[++tamL] = '\0';
+            else if(c == '~'){ 
+              estado = 54;
+              t.cat = SN; 
+              t.codigo = DESTRUTOR; 
+              return t;
             } 
 
             else if (c == '*') {  
@@ -195,14 +188,6 @@ while (1) {
               t.cat = SN; 
               t.codigo = SOMA; 
               return t; 
-            } 
-
-             else if (c == '!') {   
-              estado = 14;
-            } 
-
-            else if (c == '=') {   
-              estado = 17; 
             } 
 
             else if (c == EOF) {  // fim da expressao encontrado 
@@ -304,26 +289,19 @@ while (1) {
           
           if((isprint(c) != 0) && (c != '\"') && (c!= '\n')){
             estado = 6;
-            lexema[tamL] = c;    
-            lexema[++tamL] = '\0'; 
+            literal[tamLT] = c;    
+            literal[++tamLT] = '\0'; 
           }
 
           else if(c == '\"'){
             estado = 10;
-            lexema[tamL] = c;    
-            lexema[++tamL] = '\0';
-            // Passar o lexema para a tabela de literais e indicar o índice no token
             t.cat = LT; 
-            strcpy(t.lexema, lexema); 
+            t.indice = armazenarLiteral(literal);
             return t; 
           } 
 
           else {
-            estado = 0;
-            tamL = 0;
-            lexema[tamL] = '\0'; // limpa o lexema
             error("Caracter invalido na expressao!");
-            ungetc(c, fd);
           }
           
           break;
@@ -332,33 +310,14 @@ while (1) {
           if((isprint(c) != 0) && (c != '\\') && (c != '\'')){
             estado = 12;
             caractere = c;
-            //lexema[tamL] = c;    
-            //lexema[++tamL] = '\0'; 
           }
 
           else if(c == '\\'){
             estado = 43;
-            //lexema[tamL] = c;    
-            //lexema[++tamL] = '\0';
           }
-
-          /*else if(c == '\''){
-            estado = 13;
-            lexema[tamL] = c;    
-            lexema[++tamL] = '\0';
-            t.cat = CT_C; 
-            strcpy(t.lexema, lexema);
-            return t; 
-          }
-          Deve-se permitir constantes caracteres totalmente vazios? O próprio C não permite
-          */
 
           else {
-            estado = 0;
-            tamL = 0;
-            lexema[tamL] = '\0'; // limpa o lexema
             error("Caracter invalido na expressao!");
-            ungetc(c, fd);
           }
 
           break;
@@ -366,49 +325,28 @@ while (1) {
         case 12:
 
           if(c == '\''){
-            estado = 13;
-            //lexema[tamL] = c;     
-            //lexema[++tamL] = '\0';
-            
+            estado = 13;     
             t.cat = CT_C;
-            t.caracter = caractere;
-            
-            //t.caracter = lexema[1];
-            
-            //strcpy(t.lexema, lexema); 
+            t.caractere = caractere; 
             return t; 
           }
 
           else {
-            estado = 0;
-            tamL = 0;
-            lexema[tamL] = '\0'; // limpa o lexema
             error("Caracter invalido na expressao!");
-            ungetc(c, fd);
           }
 
           break;
         
         case 43:
 
-          if(c == 'n'){
+          if(c == 'n') 
             estado = 44;
-            //lexema[tamL] = c;    
-            //lexema[++tamL] = '\0';
-          }
 
-          else if(c == '0'){
+          else if(c == '0') 
             estado = 45;
-            //lexema[tamL] = c;    
-            //lexema[++tamL] = '\0';
-          }
 
           else {
-            //estado = 0;
-            //tamL = 0;
-            // lexema[tamL] = '\0'; // limpa o lexema
             error("Caracter invalido na expressao!");
-            ungetc(c, fd);
           }
 
           break;
@@ -417,22 +355,14 @@ while (1) {
           
           if(c == '\''){
             estado = 13;
-            //lexema[tamL] = c;     
-            //lexema[++tamL] = '\0';
             caractere = '\n';
-            t.cat = CT_C; 
-            t.caracter = caractere;
-            
-            //strcpy(t.lexema, lexema); 
+            t.cat = CT_NEWLINE; 
+            t.caractere = caractere;
             return t; 
           }
 
           else {
-            estado = 0;
-            tamL = 0;
-            //lexema[tamL] = '\0'; // limpa o lexema
             error("Caracter invalido na expressao!");
-            ungetc(c, fd);
           }
 
           break;
@@ -441,21 +371,14 @@ while (1) {
           
           if(c == '\''){
             estado = 13;
-            //lexema[tamL] = c;   
-            //lexema[++tamL] = '\0';
-            t.cat = CT_C;
+            t.cat = CT_NULL;
             caractere = '\0';
-            t.caracter = caractere; 
-            //strcpy(t.lexema, lexema); 
+            t.caractere = caractere; 
             return t; 
           }
 
           else {
-            estado = 0;
-            tamL = 0;
-            //lexema[tamL] = '\0'; // limpa o lexema
-            error("Caracter invalido na expressao!");
-            ungetc(c, fd);
+            error("Caracter invalido na expressao!"); 
           }
 
           break;
@@ -525,15 +448,11 @@ while (1) {
             t.codigo = OR;
             return t; 
           }
-
-          
+   
           else {
             error("Caracter invalido na expressao!");
-            estado = 0;
-            ungetc(c , fd); 
           }
-          
-
+        
           break; 
 
         case 51:
@@ -597,8 +516,6 @@ while (1) {
           
           if(c == '*'){
             estado = 38;
-            lexema[tamL] = c; 
-            lexema[++tamL] = '\0';
           }
 
           else {
@@ -612,24 +529,12 @@ while (1) {
           break;
 
         case 38:
-          if((c >= 0 && c <= 255) && (c != '*')){
+          if((c != '*')){
             estado =  38;
-            lexema[tamL] = c;    
-            lexema[++tamL] = '\0'; 
           }
 
           else if(c == '*'){
             estado = 39;
-            lexema[tamL] = c;    
-            lexema[++tamL] = '\0';
-          }
-
-          else {
-            estado = 0;
-            tamL = 0;
-            lexema[tamL] = '\0'; // limpa o lexema
-            error("Caracter invalido na expressao!");
-            ungetc(c, fd); 
           }
 
           break;
@@ -637,28 +542,20 @@ while (1) {
         case 39:
           if(c == '/'){
             estado = 40;
-            lexema[tamL] = c;    
-            lexema[++tamL] = '\0';
-            strcpy(t.lexema, lexema);
-            t.cat = COMMENT;
-            return t;
           }
 
           else if(c == '*'){
             estado = 39;
-            lexema[tamL] = c;    
-            lexema[++tamL] = '\0';
           }
 
           else {
-            estado = 0;
-            tamL = 0;
-            lexema[tamL] = '\0'; // limpa o lexema
             error("Caracter invalido na expressao!");
-            ungetc(c, fd); 
           }
-          
           break;
+
+        case 40:
+          estado = 0;
+          ungetc(c, fd); 
         }           
     } 
 } 
@@ -679,7 +576,7 @@ while (1) {
             break;
 
         case LT:
-            printf("<LT, %s> ", tk.lexema); 
+            printf("<LT, %s> ", tabelaLiterais[tk.indice]); 
             break;
 
         case SN: 
@@ -740,8 +637,8 @@ while (1) {
                   printf("<SN, DIFERENTE> "); 
                   break;
 
-                case CIRCUN:
-                  printf("<SN, CIRCUN> "); 
+                case PONTEIRO:
+                  printf("<SN, PONTEIRO> "); 
                   break;
 
                 case PONTO_VIRG:
@@ -791,6 +688,10 @@ while (1) {
                 case ENDERECO:
                   printf("<SN, ENDERECO> "); 
                   break;
+
+                case DESTRUTOR:
+                  printf("<SN, DESTRUTOR> ");
+                  break;
             } 
 
             break; 
@@ -804,14 +705,17 @@ while (1) {
             break;
 
         case CT_C:
-            //printf("<CT_C, %s> ", tk.lexema);
-            printf("<CT_C, %c>", tk.caracter);
-            break;
-
-        case COMMENT:
-            printf("<COMMENT, %s> ", tk.lexema);
+            printf("<CT_C, %c> ", tk.caractere);
             break;
         
+        case CT_NEWLINE:
+            printf("<CT_NEWLINE ");
+            break;
+        
+        case CT_NULL:
+            printf("<CT_NULL > ");
+            break;
+
         case PR:
             printf("<PALAVRA RESERVADA, %s> ", tk.lexema);
             break;

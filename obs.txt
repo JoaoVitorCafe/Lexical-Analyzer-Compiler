@@ -1,8 +1,5 @@
 # Problemas
+- Tratar o newline(não reconhece) - SOlução -> criar no automato e posteriormente no código uma ligação direta pra o \ e dps pro n e 0;
+- Caractere newline('\n') em strings
 
- - Tratar o newline(não reconhece) - SOlução ->  criar no automato e posteriormente no código uma ligação direta pra o \ e dps pro n e 0;
-
-caractere newline('\n') em strings
-QUalquer caractere dentro dos comentários*
-Tabela pra guardar os literais????
 

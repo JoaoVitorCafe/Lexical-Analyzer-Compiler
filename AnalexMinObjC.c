@@ -713,7 +713,7 @@ while (1) {
             break;
 
         case PR:
-            printf("<PALAVRA RESERVADA, %s> ", tk.lexema);
+            printf("<PR, %s> ", tk.lexema);
             break;
 
         case FIM_ARQ: 

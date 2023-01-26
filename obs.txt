@@ -1,7 +1,0 @@
-# Problemas
-- Tratar o newline(não reconhece) - 
-    Solução -> Criar no automato e posteriormente no código uma ligação direta pra o \ e dps pro n ;
-
-- Caractere newline('\n') em strings
-
-
